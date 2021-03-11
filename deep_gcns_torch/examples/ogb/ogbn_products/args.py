@@ -16,8 +16,11 @@ class ArgsInit(object):
         parser.add_argument('--dataset', type=str, default='ogbn-products',
                             help='dataset name (default: ogbn-products)')
         parser.add_argument('--data_folder', type=str, default='dataset')
+        parser.add_argument('--output_folder', type=str, default='log')
+        parser.add_argument('--partition_method', type=str, default='random')
         parser.add_argument('--cluster_number', type=int, default=10,
                             help='the number of sub-graphs for training')
+        parser.add_argument("--eval_cluster_number", type=int, default=10)
         parser.add_argument('--self_loop', action='store_true')
         # training & eval settings
         parser.add_argument('--use_gpu', action='store_true')
@@ -85,8 +88,8 @@ class ArgsInit(object):
                                           self.args.dropout, self.args.gcn_aggr,
                                           self.args.t, self.args.learn_t, self.args.p, self.args.learn_p,
                                           self.args.msg_norm, self.args.learn_msg_scale)
-
-        self.args.save = 'log/{}-{}-{}'.format(self.args.save, time.strftime("%Y%m%d-%H%M%S"), str(uuid.uuid4()))
+        save_folder = f"{self.args.save}-{time.strftime('%Y%m%d-%H%M%S')}"
+        self.args.save = os.path.join(self.args.output_folder, save_folder)
         self.args.model_save_path = os.path.join(self.args.save, self.args.model_save_path)
         create_exp_dir(self.args.save, scripts_to_save=glob.glob('*.py'))
         log_format = '%(asctime)s %(message)s'

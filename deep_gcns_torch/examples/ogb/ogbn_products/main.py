@@ -23,6 +23,8 @@ from attacks import *
 
 from torch.utils.tensorboard import SummaryWriter
 
+from test import test_with_partition
+
 @torch.no_grad()
 def test(model, x, edge_index, y_true, split_idx, evaluator, device=None):
     # test on CPU
@@ -129,7 +131,7 @@ def main():
     else:
         device = torch.device('cpu')
 
-    dataset = PygNodePropPredDataset(name=args.dataset)
+    dataset = PygNodePropPredDataset(name=args.dataset, root=args.data_folder)
     graph = dataset[0]
 
     adj = SparseTensor(row=graph.edge_index[0],
@@ -181,27 +183,35 @@ def main():
         writer.add_scalar("Loss/train", epoch_loss, epoch)
         model.print_params(epoch=epoch)
 
-        if epoch % args.eval_epochs == 0:
-            save_ckpt(model, optimizer,
-                      round(epoch_loss, 4), epoch,
-                      args.model_save_path,
-                      sub_dir, name_post=f'epoch{epoch}')
-            logging.info(f"Epoch {epoch}, saved model to checkpoint folder {args.model_save_path}")
+        # if epoch % args.eval_epochs == 0:
+        #     save_ckpt(model, optimizer,
+        #               round(epoch_loss, 4), epoch,
+        #               args.model_save_path,
+        #               sub_dir, name_post=f'epoch{epoch}')
+        #     logging.info(f"Epoch {epoch}, saved model to checkpoint folder {args.model_save_path}")
 
-        if epoch == args.epochs:
-            save_ckpt(model, optimizer,
-                      round(epoch_loss, 4), epoch,
-                      args.model_save_path,
-                      sub_dir, name_post='final')
-            logging.info(f"Saved model to checkpoint folder {args.model_save_path}")
+        if epoch % args.eval_epochs == 0:
+            # save_ckpt(model, optimizer,
+            #           round(epoch_loss, 4), epoch,
+            #           args.model_save_path,
+            #           sub_dir, name_post='final')
+            # logging.info(f"Saved model to checkpoint folder {args.model_save_path}")
 
             logging.info(f'-- Evaluating at epoch {epoch} --')
-            result = test(model, graph.x, graph.edge_index, graph.y, split_idx, evaluator)
+            res = test_with_partition(
+                model, graph, adj, split_idx,
+                num_clusters=args.eval_cluster_number,
+                partition_method=args.partition_method,
+                evaluator=evaluator,
+                device=device
+            )
 
-            logging.info(result)
+            # result = test(model, graph.x, graph.edge_index, graph.y, split_idx, evaluator)
+
+            logging.info(res)
             logging.info(f"---------------------------------")
 
-            train_accuracy, valid_accuracy, test_accuracy = result
+            train_accuracy, valid_accuracy, test_accuracy = res["train_acc"], res["valid_acc"], res["test_acc"]
             writer.add_scalar("Acc/train", train_accuracy)
             writer.add_scalar("Acc/dev", valid_accuracy)
 
@@ -217,6 +227,7 @@ def main():
                           round(epoch_loss, 4), epoch,
                           args.model_save_path,
                           sub_dir, name_post='valid_best')
+                logging.info(f"Saved better model to checkpoint folder {args.model_save_path}")
 
     logging.info("%s" % results)
 
