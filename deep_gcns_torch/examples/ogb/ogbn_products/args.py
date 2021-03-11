@@ -15,6 +15,7 @@ class ArgsInit(object):
         # dataset
         parser.add_argument('--dataset', type=str, default='ogbn-products',
                             help='dataset name (default: ogbn-products)')
+        parser.add_argument('--data_folder', type=str, default='dataset')
         parser.add_argument('--cluster_number', type=int, default=10,
                             help='the number of sub-graphs for training')
         parser.add_argument('--self_loop', action='store_true')
@@ -24,6 +25,8 @@ class ArgsInit(object):
                             help='which gpu to use if any (default: 0)')
         parser.add_argument('--epochs', type=int, default=500,
                             help='number of epochs to train (default: 500)')
+        parser.add_argument('--eval_epochs', type=int, default=50,
+                            help='evaluate every n epochs')
         parser.add_argument('--lr', type=float, default=0.01,
                             help='learning rate set for optimizer.')
         parser.add_argument('--dropout', type=float, default=0.5)
@@ -63,6 +66,7 @@ class ArgsInit(object):
         # load pre-trained model
         parser.add_argument('--model_load_path', type=str, default='ogbn_products_pretrained_model.pth',
                             help='the path of pre-trained model')
+        parser.add_argument('--eval_res_path', type=str, default='results.jsonl')
 
         #newly added attack hyper-parameters
         parser.add_argument('--step-size', type=float, default=5e-3)

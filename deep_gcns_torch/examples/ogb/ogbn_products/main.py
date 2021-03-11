@@ -1,4 +1,6 @@
 import __init__
+import os
+
 from ogb.nodeproppred import Evaluator
 import torch
 from torch_sparse import SparseTensor
@@ -19,12 +21,19 @@ import sys
 sys.path.insert(0,'..')
 from attacks import *
 
+from torch.utils.tensorboard import SummaryWriter
 
 @torch.no_grad()
-def test(model, x, edge_index, y_true, split_idx, evaluator):
+def test(model, x, edge_index, y_true, split_idx, evaluator, device=None):
     # test on CPU
     model.eval()
-    model.to('cpu')
+    if not device:
+        model = model.to('cpu')
+    else:
+        x = x.to(device)
+        edge_index = edge_index.to(device)
+        y_true = y_true.to(device)
+
     out = model(x, edge_index)
 
     y_pred = out.argmax(dim=-1, keepdim=True)
@@ -105,7 +114,8 @@ def train_flag(data, model, x, y_true, train_idx, optimizer, device, args):
 
         loss_list.append(loss.item())
 
-        print(loss.item())
+
+        print(f"Loss {loss.item():.4f}")
 
     return statistics.mean(loss_list)
 
@@ -137,6 +147,9 @@ def main():
     sub_dir = 'random-train_{}-full_batch_test'.format(args.cluster_number)
     logging.info(sub_dir)
 
+    log_dir = os.path.join(args.save, "tensorboard/")
+    writer = SummaryWriter(log_dir=log_dir)
+
     args.in_channels = graph.x.size(-1)
     args.num_tasks = dataset.num_classes
 
@@ -165,18 +178,32 @@ def main():
         epoch_loss = train_flag(data, model, graph.x, graph.y, train_idx, optimizer, device, args)
 
         logging.info('Epoch {}, training loss {:.4f}'.format(epoch, epoch_loss))
+        writer.add_scalar("Loss/train", epoch_loss, epoch)
         model.print_params(epoch=epoch)
+
+        if epoch % args.eval_epochs == 0:
+            save_ckpt(model, optimizer,
+                      round(epoch_loss, 4), epoch,
+                      args.model_save_path,
+                      sub_dir, name_post=f'epoch{epoch}')
+            logging.info(f"Epoch {epoch}, saved model to checkpoint folder {args.model_save_path}")
 
         if epoch == args.epochs:
             save_ckpt(model, optimizer,
                       round(epoch_loss, 4), epoch,
                       args.model_save_path,
-                      sub_dir, name_post='valid_best')
+                      sub_dir, name_post='final')
+            logging.info(f"Saved model to checkpoint folder {args.model_save_path}")
 
+            logging.info(f'-- Evaluating at epoch {epoch} --')
             result = test(model, graph.x, graph.edge_index, graph.y, split_idx, evaluator)
+
             logging.info(result)
+            logging.info(f"---------------------------------")
 
             train_accuracy, valid_accuracy, test_accuracy = result
+            writer.add_scalar("Acc/train", train_accuracy)
+            writer.add_scalar("Acc/dev", valid_accuracy)
 
             if train_accuracy > results['highest_train']:
                 results['highest_train'] = train_accuracy
