@@ -197,7 +197,7 @@ def main():
             #           sub_dir, name_post='final')
             # logging.info(f"Saved model to checkpoint folder {args.model_save_path}")
 
-            logging.info(f'-- Evaluating at epoch {epoch} --')
+            logging.info(f'---- Evaluating at epoch {epoch} ----')
             res = test_with_partition(
                 model, graph, adj, split_idx,
                 num_clusters=args.eval_cluster_number,

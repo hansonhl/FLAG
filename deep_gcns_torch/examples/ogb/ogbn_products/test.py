@@ -90,7 +90,7 @@ def eval_with_partition(args):
     args.in_channels = graph.x.size(-1)
     args.num_tasks = dataset.num_classes
 
-    print('%s' % args)
+    # print('%s' % args)
 
     model = DeeperGCN(args).to(device)
     ckpt = torch.load(model_load_path)
@@ -99,7 +99,6 @@ def eval_with_partition(args):
 
     res = test_with_partition(
         model, graph, adj, split_idx,
-        num_nodes=graph.num_nodes,
         num_clusters=args.eval_cluster_number,
         partition_method=args.partition_method,
         evaluator=evaluator,
@@ -135,6 +134,8 @@ def test_with_partition(model, graph, adj, split_idx, num_clusters,
         logits = model(x_, sg_edges_)
         pred = logits.argmax(dim=-1)
         y_pred[sg_nodes[idx]] = pred
+
+    y_pred = y_pred.unsqueeze(-1)
 
     train_acc = evaluator.eval({
         'y_true': y_true[split_idx['train']],
