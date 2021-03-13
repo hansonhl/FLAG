@@ -75,7 +75,7 @@ def eval_with_partition(args):
     print("Starting evaluating model stored at", model_load_path)
 
     device = torch.device("cuda")
-
+       
     dataset = PygNodePropPredDataset(name=args.dataset, root=args.data_folder)
     graph = dataset[0]
     adj = SparseTensor(row=graph.edge_index[0],
@@ -91,28 +91,28 @@ def eval_with_partition(args):
     args.num_tasks = dataset.num_classes
 
     print('%s' % args)
-
     model = DeeperGCN(args).to(device)
     ckpt = torch.load(model_load_path)
     model.load_state_dict(ckpt['model_state_dict'])
 
 
-    res = test_with_partition(
+    res, out = test_with_partition(
         model, graph, adj, split_idx,
-        num_nodes=graph.num_nodes,
         num_clusters=args.eval_cluster_number,
+        num_classes = args.num_tasks, 
         partition_method=args.partition_method,
         evaluator=evaluator,
         device=device
     )
     print(res)
+    torch.save(out, f'{model_load_path}/out.pt')
     return res
 
 
 
 @torch.no_grad()
 def test_with_partition(model, graph, adj, split_idx, num_clusters,
-                        partition_method, evaluator, device=None):
+                        num_classes, partition_method, evaluator, device=None):
     x, y_true, num_nodes = graph.x, graph.y, graph.num_nodes
 
     if partition_method == "random":
@@ -128,6 +128,7 @@ def test_with_partition(model, graph, adj, split_idx, num_clusters,
     sg_nodes, sg_edges = data
 
     y_pred = torch.zeros(num_nodes, dtype=torch.long).to(device)
+    all_logits = torch.zeros((num_nodes, num_classes), dtype=torch.float)
 
     for idx in tqdm(range(len(sg_nodes))):
         x_ = x[sg_nodes[idx]].to(device)
@@ -135,6 +136,7 @@ def test_with_partition(model, graph, adj, split_idx, num_clusters,
         logits = model(x_, sg_edges_)
         pred = logits.argmax(dim=-1)
         y_pred[sg_nodes[idx]] = pred
+        all_logits[sg_nodes[idx]] = logits
 
     train_acc = evaluator.eval({
         'y_true': y_true[split_idx['train']],
@@ -151,7 +153,7 @@ def test_with_partition(model, graph, adj, split_idx, num_clusters,
 
     res_dict = {"train_acc": train_acc, "valid_acc": valid_acc,
                 "test_acc": test_acc}
-    return res_dict
+    return res_dict, all_logits
 
 
 
