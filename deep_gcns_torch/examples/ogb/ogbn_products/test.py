@@ -105,7 +105,7 @@ def eval_with_partition(args):
         device=device
     )
     print(res)
-    torch.save(out, f'{model_load_path}/out.pt')
+    torch.save(out, f'log-hyperturing1/logits/basic_random_parition_logits.pt')
     return res
 
 
@@ -128,7 +128,7 @@ def test_with_partition(model, graph, adj, split_idx, num_clusters,
     sg_nodes, sg_edges = data
 
     y_pred = torch.zeros(num_nodes, dtype=torch.long).to(device)
-    all_logits = torch.zeros((num_nodes, num_classes), dtype=torch.float)
+    all_logits = torch.zeros((num_nodes, num_classes), dtype=torch.float).to(device)
 
     for idx in tqdm(range(len(sg_nodes))):
         x_ = x[sg_nodes[idx]].to(device)
@@ -137,6 +137,11 @@ def test_with_partition(model, graph, adj, split_idx, num_clusters,
         pred = logits.argmax(dim=-1)
         y_pred[sg_nodes[idx]] = pred
         all_logits[sg_nodes[idx]] = raw_softmax
+
+    y_pred = y_pred.unsqueeze(-1)
+    # print("true", y_true.shape)
+    # print("pred", y_pred.shape)
+
 
     train_acc = evaluator.eval({
         'y_true': y_true[split_idx['train']],
