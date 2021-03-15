@@ -133,10 +133,10 @@ def test_with_partition(model, graph, adj, split_idx, num_clusters,
     for idx in tqdm(range(len(sg_nodes))):
         x_ = x[sg_nodes[idx]].to(device)
         sg_edges_ = sg_edges[idx].to(device)
-        logits = model(x_, sg_edges_)
+        logits, raw_softmax = model(x_, sg_edges_)
         pred = logits.argmax(dim=-1)
         y_pred[sg_nodes[idx]] = pred
-        all_logits[sg_nodes[idx]] = logits
+        all_logits[sg_nodes[idx]] = raw_softmax
 
     train_acc = evaluator.eval({
         'y_true': y_true[split_idx['train']],
