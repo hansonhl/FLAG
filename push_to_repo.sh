@@ -4,5 +4,5 @@ my_rsync () {
     rsync -avzh --exclude ".git/" --exclude-from=".git/ignores.tmp" $@
 }
 
-my_rsync . hansonlu@madmax.stanford.edu:remote/FLAG/
+my_rsync . hansonlu@madmax.stanford.edu:remote/FLAG_repo/
 
