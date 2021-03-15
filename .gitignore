@@ -1,2 +1,6 @@
 .DS*
 .idea
+*.pth
+*.pyc
+*.gz
+*.pt

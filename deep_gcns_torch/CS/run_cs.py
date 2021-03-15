@@ -91,7 +91,8 @@ def main():
 
 
 
-    model_outs = glob.glob(f'models/{args.dataset}_{args.method}/*.pt')
+    # model_outs = glob.glob(f'models/{args.dataset}_{args.method}/*.pt')
+    model_outs = glob.glob(f'models/*.pt')
     
     if args.method == 'lp':
         out = label_propagation(data, split_idx, **lp_dict)
