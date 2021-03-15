@@ -133,7 +133,7 @@ class DeeperGCN(torch.nn.Module):
 
         h = self.node_pred_linear(h)
 
-        if self.gcns.training():
+        if self.gcns.training:
             return torch.log_softmax(h, dim=-1)
         else:
             return torch.log_softmax(h, dim=-1), torch.softmax(h, dim=-1)

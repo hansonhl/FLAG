@@ -82,18 +82,18 @@ def main():
         mlp_fn = double_correlation_fixed
 
         gat_dict = {
-            'train_only': True,
+            'labels': ['train'],
             'alpha': 0.8, 
             'A': DAD,
             'num_propagations': 50,
+            'display': False,
         }
         gat_fn = only_outcome_correlation
 
 
 
     # model_outs = glob.glob(f'models/{args.dataset}_{args.method}/*.pt')
-    model_outs = glob.glob(f'models/*.pt')
-    
+    model_outs = glob.glob(f'model_outs/*.pt')
     if args.method == 'lp':
         out = label_propagation(data, split_idx, **lp_dict)
         print('Valid acc: ', eval_test(out, split_idx['valid']))

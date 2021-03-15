@@ -105,7 +105,7 @@ def eval_with_partition(args):
         device=device
     )
     print(res)
-    torch.save(out, f'log-hyperturing1/logits/basic_random_parition_logits.pt')
+    torch.save(out, f"log-hyperturing1/logits/basic_random_parition_logits.pt")
     return res
 
 
@@ -119,7 +119,8 @@ def test_with_partition(model, graph, adj, split_idx, num_clusters,
         parts = random_partition_graph(num_nodes, num_clusters)
         data = generate_sub_graphs(adj, parts, cluster_number=num_clusters)
     else:
-        raise ValueError(f"Invalid partition method {partition_method}")
+        pass
+        #raise ValueError(f"Invalid partition method {partition_method}")
 
     model.eval()
     if device is None:

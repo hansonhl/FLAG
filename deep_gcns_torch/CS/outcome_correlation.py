@@ -264,7 +264,7 @@ def get_run_from_file(out):
     try:
         return int(os.path.splitext(os.path.basename(out))[0])
     except:
-        return -1
+        return 0
 
 def get_orig_acc(data, eval_test, model_outs, split_idx):
     logger_orig = Logger(len(model_outs))
