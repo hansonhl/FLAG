@@ -1,14 +1,19 @@
 import __init__
 import os
 
-from ogb.nodeproppred import Evaluator
+import sys
+sys.path.insert(0,'..')
+# sys.path.append(os.path.join(os.path.dirname("__file__"), '..', '..'))
+sys.path.append(os.path.join(os.path.dirname("__file__"), '..', '..', '..'))
+sys.path.append(os.path.join(os.path.dirname("__file__"), '..', '..', '..', '..'))
+
+from ogb.nodeproppred import Evaluator, PygNodePropPredDataset
 import torch
 from torch_sparse import SparseTensor
 import torch.nn.functional as F
 from torch_geometric.utils import add_self_loops
 from utils.data_util import intersection, random_partition_graph, generate_sub_graphs
 from args import ArgsInit
-from ogb.nodeproppred import PygNodePropPredDataset
 from model import DeeperGCN
 import numpy as np
 from utils.ckpt_util import save_ckpt
@@ -17,8 +22,7 @@ import statistics
 import time
 
 import pdb
-import sys
-sys.path.insert(0,'..')
+
 from attacks import *
 
 from torch.utils.tensorboard import SummaryWriter

@@ -1,6 +1,6 @@
 import __init__
 import torch
-from gcn_lib.sparse.torch_vertex import GENConv
+from gcn_lib.sparse.torch_vertex import GENConv, GATConv
 from gcn_lib.sparse.torch_nn import norm_layer
 import torch.nn.functional as F
 from torch.utils.checkpoint import checkpoint
@@ -67,6 +67,9 @@ class DeeperGCN(torch.nn.Module):
                               p=p, learn_p=self.learn_p,
                               msg_norm=self.msg_norm, learn_msg_scale=learn_msg_scale,
                               norm=norm, mlp_layers=mlp_layers)
+            elif conv == "gat":
+                gcn = GATConv(hidden_channels, hidden_channels, norm=norm, heads=4)
+            
             else:
                 raise Exception('Unknown Conv Type')
 

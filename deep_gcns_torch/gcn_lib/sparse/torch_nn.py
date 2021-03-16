@@ -30,6 +30,8 @@ def norm_layer(norm_type, nc):
         layer = nn.LayerNorm(nc, elementwise_affine=True)
     elif norm == 'instance':
         layer = nn.InstanceNorm1d(nc, affine=False)
+    elif norm == 'group':
+        layer = nn.GroupNorm(num_groups=2, num_channels=nc)
     else:
         raise NotImplementedError('normalization layer [%s] is not found' % norm)
     return layer

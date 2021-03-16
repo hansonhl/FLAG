@@ -117,9 +117,9 @@ class GATConv(nn.Module):
     """
     Graph Attention Convolution layer (with activation, batch normalization)
     """
-    def __init__(self, in_channels, out_channels,  act='relu', norm=None, bias=True, heads=8):
+    def __init__(self, in_channels, out_channels,  act='relu', norm=None, bias=True, heads=8, concat=False):
         super(GATConv, self).__init__()
-        self.gconv = tg.nn.GATConv(in_channels, out_channels, heads, bias=bias)
+        self.gconv = tg.nn.GATConv(in_channels, out_channels, heads, bias=bias, concat=concat)
         m =[]
         if act:
             m.append(act_layer(act))
@@ -129,6 +129,7 @@ class GATConv(nn.Module):
 
     def forward(self, x, edge_index):
         out = self.unlinear(self.gconv(x, edge_index))
+#         import pdb; pdb.set_trace()
         return out
 
 
